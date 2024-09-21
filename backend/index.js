@@ -1,6 +1,10 @@
 const express = require('express')
 require('dotenv').config()
 
+// Kết nối CSDL
+const database = require('./config/database');
+database.connect();
+
 const app = express()
 const port = process.env.PORT
 app.use(express.json())
