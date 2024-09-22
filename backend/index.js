@@ -1,17 +1,34 @@
 const express = require('express')
+const path = require('path')
+const cors = require('cors')
+const moment = require('moment')
+
 require('dotenv').config()
 
 // Kết nối CSDL
-const database = require('./config/database');
+const database = require('./config/database')
 database.connect();
+
+const adminRoute = require('./routes/admin/index.route')
+const systemPrefix = require('./config/system')
 
 const app = express()
 const port = process.env.PORT
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
 
-app.use('/', (req, res) => { res.send('SEVER ON') })
+// Cho phép CORS
+app.use(cors());
+
+// parse application/x-www-form-urlencoded
+app.use(express.urlencoded({ extended: false }))
+app.use(express.json())
+
+// Variables
+app.locals.adminPrefix = systemPrefix.adminPrefix
+app.locals.moment = moment
+
+// Routes
+adminRoute(app)
 
 app.listen(port, () => {
-    console.log('Server running on the port: '+ port)
+    console.log(`App listening on port ${port}`)
 })
