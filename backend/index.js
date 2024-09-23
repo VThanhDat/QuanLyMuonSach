@@ -10,6 +10,8 @@ const database = require('./config/database')
 database.connect();
 
 const adminRoute = require('./routes/admin/index.route')
+const clientRoute = require('./routes/client/index.route')
+
 const systemPrefix = require('./config/system')
 
 const app = express()
@@ -28,6 +30,7 @@ app.locals.moment = moment
 
 // Routes
 adminRoute(app)
+clientRoute(app)
 
 app.listen(port, () => {
     console.log(`App listening on port ${port}`)
