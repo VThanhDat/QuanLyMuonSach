@@ -47,6 +47,8 @@
 </template>
 
 <script>
+import { toast } from "vue3-toastify";
+import "vue3-toastify/dist/index.css";
 import AppHeader from '@/components/admin/AppHeader.vue';
 import InputSearch from '@/components/admin/InputSearch.vue';
 import BookList from '@/components/admin/BookList.vue';
@@ -131,9 +133,15 @@ export default {
             if (confirm("Bạn muốn xóa cuốn sách này?")) {
                 try {
                     await BookService.delete(book._id);
+                    toast.success("Book was deleted successfully!", {
+                        autoClose: 1200,
+                    });
                     this.refreshList();
                 } catch (error) {
                     console.log(error)
+                    toast.error("Failed to delete the book.", {
+                        autoClose: 1200,
+                    });
                 }
             }
         },
