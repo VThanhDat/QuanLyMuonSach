@@ -1,8 +1,8 @@
 <template>
     <AppHeader />
-    <div v-if="book" class="page">
-        <h4>Hiệu chỉnh đầu sách <i class="fa-solid fa-book"></i></h4>
-        <BookForm :book="book" :isEditMode="true" @submit:book="updateBook" @delete:book="deleteBook" class="form-container" />
+    <div class="page">
+        <h4>Thêm sách <i class="fa-solid fa-book"></i></h4>
+        <BookForm :book="formData" :isEditMode="false" @submit:book="createBook" class="form-container" />
         <p>{{ message }}</p>
     </div>
 </template>
@@ -18,48 +18,33 @@ export default {
         AppHeader,
         BookForm,
     },
-    props: {
-        id: { type: String, required: true },
-    },
     data() {
         return {
-            info: "Image data is being updated",
-            imageChanged: false,
-            book: null,
-            message: "",
             formData: {
+                id_publisher: "",
+                bookTitle: "",
+                price: 0,
+                quantity: 0,
                 thumbnail: null,
+                publishYear: "",
+                author: "",
             },
+            imageChanged: false,
+            message: "", // Define message here
         };
     },
     methods: {
-        async getBook(id) {
-            try {
-                this.book = await BookService.get(id);
-            } catch (error) {
-                console.error(error);
-                // Chuyển sang trang NotFound đồng thời giữ cho URL không đổi
-                this.$router.push({
-                    name: "notfound",
-                    params: {
-                        pathMatch: this.$route.path.split("/").slice(1),
-                    },
-                    query: this.$route.query,
-                    hash: this.$route.hash,
-                });
-            }
-        },
-        async updateBook(data) {
-            if (confirm("Bạn muốn cập nhật cuốn sách sách này?")) {
+        async createBook(data) {
+            if (confirm("Bạn muốn thêm cuốn sách này?")) {
                 try {
-                    // If the image has changed, add it to the formData
+                    // If the image is uploaded, add it to the formData
                     if (this.imageChanged) {
                         data.thumbnail = this.formData.thumbnail;
                     }
-                    await BookService.update(this.book._id, data);
+                    await BookService.create(data);
 
                     // Show success toast
-                    toast.success("Book was updated successfully!", {
+                    toast.success("Book was created successfully!", {
                         autoClose: 1200,
                     });
 
@@ -69,37 +54,12 @@ export default {
                     }, 1200); // match the autoClose duration of toast
                 } catch (error) {
                     console.error(error);
-                    toast.error("Failed to update the book.", {
+                    toast.error("Failed to create the book.", {
                         autoClose: 1200,
                     });
                 }
             }
         },
-        async deleteBook() {
-            if (confirm("Bạn muốn xóa sách này?")) {
-                try {
-                    await BookService.delete(this.book._id);
-
-                    // Show success toast
-                    toast.success("Book was deleted successfully!", {
-                        autoClose: 1200,
-                    });
-
-                    // Wait for the toast to finish and then redirect
-                    setTimeout(() => {
-                        this.$router.push("/admin/books");
-                    }, 1200); // match the autoClose duration of toast
-                } catch (error) {
-                    console.log(error);
-                    toast.error("Failed to delete the book.", {
-                        autoClose: 1200,
-                    });
-                }
-            }
-        },
-    },
-    created() {
-        this.getBook(this.id);
     },
 };
 </script>

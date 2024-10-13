@@ -20,6 +20,11 @@ const adminRoutes = [
         name: "notfound",
         component: () => import("@/views/admin/pages/books/NotFound.vue"),
     },
+    {
+        path: "/admin/books/create",
+        name: "book.add",
+        component: () => import("@/views/admin/pages/books/CreateBook.vue"),
+    },
 ]
 
 export default adminRoutes;

@@ -70,16 +70,25 @@
         </div>
         <div class="form-group">
             <label for="thumbnail">Ảnh</label>
-            <img class="center-image" width="150px" height="200px" :src="'/api/uploads/' + book.thumbnail"
-                alt="Hình sách" style="max-width: 100%;" />
+
+            <!-- Conditionally display the image only in edit mode -->
+            <img v-if="isEditMode && book.thumbnail"
+            class="center-image"
+            width="150px"
+            height="200px"
+            :src="'/api/uploads/' + book.thumbnail"
+            alt="Hình sách"
+            style="max-width: 100%;"
+            />
+
             <div class="custom-file-input">
-                <input 
-                    id="thumbnail" 
-                    name="thumbnail" 
-                    type="file" 
-                    class="form-control-file" 
-                    @change="handleThumbnailChange"
-                />
+            <input
+                id="thumbnail"
+                name="thumbnail"
+                type="file"
+                class="form-control-file"
+                @change="handleThumbnailChange"
+            />
             </div>
             <ErrorMessage name="thumbnail" class="error-feedback" />
         </div>
@@ -111,6 +120,10 @@ export default {
     emits: ["submit:book", "delete:book"],
     props: {
         book: { type: Object, required: true },
+        isEditMode: {
+            type: Boolean,
+            default: false, // Default is false for CreateBook
+        },
     },
     data() {
         const bookFormSchema = yup.object().shape({
