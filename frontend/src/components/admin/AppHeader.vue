@@ -8,7 +8,7 @@
                 <li class="nav-item">
                     <router-link :to="{name: 'book'}" class="nav-link" :class="{active: $route.name === 'book'}">
                         <h6><b>Quản lý kho sách</b></h6>
-                        <i class="fa-solid fa-bok"></i>
+                        <i class="fa-solid fa-book"></i>
                     </router-link>
                 </li>
                 <li class="nav-item">

@@ -6,14 +6,14 @@
             </a>
             <div class="mr-auto navbar-nav">
                 <li class="nav-item">
-                    <router-link :to="{name: 'book'}" class="nav-link" :class="{active: $route.name === 'book'}">
-                        <h6><b>Quản lý kho sách</b></h6>
-                        <i class="fa-solid fa-bok"></i>
+                    <router-link :to="{name: 'book-client'}" class="nav-link" :class="{active: $route.name === 'book-client'}">
+                        <h6><b>Danh mục sách</b></h6>
+                        <i class="fa-solid fa-book"></i>
                     </router-link>
                 </li>
                 <li class="nav-item">
-                    <router-link :to="{ name: 'reader' }" class="nav-link" :class="{ active: $route.name === 'reader' }">
-                        <h6><b>Quản lý người đọc</b></h6>
+                    <router-link :to="{ name: 'borrow-client' }" class="nav-link" :class="{ active: $route.name === 'borrow-client' }">
+                        <h6><b>Sách đã mượn</b></h6>
                         <i class="fa-solid fa-user"></i>
                     </router-link>
                 </li>
