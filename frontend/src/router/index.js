@@ -1,8 +1,10 @@
 import { createRouter, createWebHistory } from "vue-router";
 import adminRoutes from "./admin.route";
+import clientRoutes from './client.route'
 
 const routes = [
     ...adminRoutes,
+    ...clientRoutes,
 ]
 
 const router = createRouter({
