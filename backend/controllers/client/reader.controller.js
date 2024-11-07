@@ -44,12 +44,13 @@ const getAll = async (req, res) => {
 
 const borrowBook = async (req, res) => {
     try {
+
         const tokenUser = req.cookies.tokenUser;
         if (tokenUser) {
             const reader = await Reader.findOne({ token: tokenUser });
 
             if (!reader) {
-                return res.status(404).json({message: 'Reader not found'})
+                return res.status(404).json({ message: 'Reader not found' });
             }
 
             if (!Array.isArray(reader.borrow)) {
@@ -62,54 +63,54 @@ const borrowBook = async (req, res) => {
                 borrowDate: req.body.borrow.borrowDate || "01/01/2024",
                 returnDate: req.body.borrow.returnDate || "31/12/2024",
                 quantity: req.body.borrow.quantity || 1,
-            }
+            };
 
-            const readers = await Reader.find({})
+            const readers = await Reader.find({});
             let borrowedBookQuantity = 0;
 
             readers.forEach(function (reader) {
                 reader.borrow.forEach(function (borrow) {
                     if (borrow.id_book === req.body.borrow.id_book) {
-                        borrowedBookQuantity += borrow.quantity
+                        borrowedBookQuantity += borrow.quantity;
                     }
-                })
-            })
+                });
+            });
 
-            const book = await Book.findById(req.body.borrow.id_book)
-
+            const book = await Book.findById(req.body.borrow.id_book);
             if (!book) {
                 // Kiểm tra xem sách có tồn tại hay không
-                return res.status(404).json({message: 'Book not found'})
+                return res.status(404).json({ message: 'Book not found' });
             }
+
 
             if (book.quantity === 0) {
                 // Không còn sách trong kho
-                console.log("Không còn sách trong kho để mượn")
-                return res.status(400).json({message: "Không còn sách trong kho để mượn"})
+                console.log("Không còn sách trong kho để mượn");
+                return res.status(400).json({ message: "Không còn sách trong kho để mượn" });
             } else if (book.quantity - borrowedBookQuantity - newBorrow.quantity < 0) {
                 // Số lượng sách đã được mượn bằng hoặc vượt quá số lượng sách trong kho
-                console.log("Số lượng sách đã mượn đã đạt tới giới hạn")
-                return res.status(400).json({message: "Số lượng sách đã mượn đã đạt tới giới hạn"})
+                console.log("Số lượng sách đã mượn đã đạt tới giới hạn");
+                return res.status(400).json({ message: "Số lượng sách đã mượn đã đạt tới giới hạn" });
             }
 
             // Kiểm tra xem đã có quyển sách trong mảng borrow chưa
-            const existingBook = reader.borrow.find(book => book.id_book === newBorrow.id_book)
+            const existingBook = reader.borrow.find(book => book.id_book === newBorrow.id_book);
 
             if (existingBook) {
                 // Nếu đã có quyển sách trong mảng borrow, cập nhật số lượng
-                existingBook.quantity += newBorrow.quantity
-                existingBook.borrowDate = newBorrow.borrowDate || "01/01/2024"
-                existingBook.returnDate = newBorrow.returnDate || "31/12/2024"
-                existingBook.status = newBorrow.status || "processing"
+                existingBook.quantity += newBorrow.quantity;
+                existingBook.borrowDate = newBorrow.borrowDate || '01/01/2024';
+                existingBook.returnDate = newBorrow.returnDate || '31/12/2024';
+                existingBook.status = newBorrow.status || "processing";
             } else {
                 // Nếu chưa có quyển sách trong mảng borrow, thêm borrow vào mảng
-                reader.borrow.push(newBorrow)
+                reader.borrow.push(newBorrow);
             }
 
-            // Lưu lại thay đổi vào CSDL
-            await reader.save()
-            
-            res.status(200).json({message: 'Cập nhật mượn sách thành công', reader})
+            // Lưu lại thay đổi vào cơ sở dữ liệu
+            await reader.save();
+
+            res.status(200).json({ message: 'Cập nhật mượn sách thành công', reader });
         }
     } catch (error) {
         console.error('Cập nhật mượn sách thất bại:', error);

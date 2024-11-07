@@ -14,6 +14,11 @@ const clientRoutes = [
         name: "borrow-client",
         component: () => import("@/views/client/pages/books/BorrowBook.vue"),
     },
+    {
+        path: "/reader/borrow/:id",
+        name: "borrow-book",
+        component: () => import("@/views/client/pages/books/ClientBorrow.vue"),
+      },
 ]
 
 export default clientRoutes;
