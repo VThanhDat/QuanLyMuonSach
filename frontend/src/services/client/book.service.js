@@ -10,5 +10,13 @@ class BookService {
   async get(id) {
     return (await this.api.get(`/${id}`)).data;
   }
+  async borrowBook(bookId) {
+    try {
+      const response = await this.apiClient.get('/');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 export default new BookService();

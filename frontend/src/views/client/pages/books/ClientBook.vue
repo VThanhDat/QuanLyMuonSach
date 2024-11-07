@@ -20,11 +20,11 @@
                 <i class="fa-solid fa-book"></i>
               </h4>
               <ClientBookDetail :book="activeBook" />
-              <!-- <router-link :to="{ name: 'borrow-book', params: { id: activeBook._id }}">
+              <router-link :to="{ name: 'borrow-book', params: { id: activeBook._id }}">
                 <span class="btn btn-borrow">
                   <i class="fas fa-edit"></i> Mượn sách
                 </span>
-              </router-link> -->
+              </router-link>
             </div>
           </div>
         </div>
