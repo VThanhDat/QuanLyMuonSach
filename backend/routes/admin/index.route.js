@@ -2,8 +2,8 @@ const configSystem = require('../../config/system')
 
 const bookRouter = require('./book.route')
 const employeeRouter = require('./employee.route')
+const authRouter = require('./auth.route');
 const readerRouter = require('../client/reader.route');
-const authRouter = require('../auth.route');
 const authMiddleware = require('../../middlewares/admin/auth.middleware')
     
 module.exports = (app) => {
@@ -26,10 +26,8 @@ module.exports = (app) => {
         employeeRouter
     )
 
-
     app.use(
         ADMIN_PATH + '/reader',
         readerRouter
     )
-
 }

@@ -29,17 +29,24 @@ const getAll = async (req, res) => {
 }
 
 const getOne = async (req, res) => {
-    try {
-        const book = await Book.findById(req.params.id)
-        if (!book) {
-            res.status(404).json({message: `Can not find book with ID: ${req.params.id}`})
-        }
-        res.status(200).json(book);
-    } catch (error) {
-        res.status(500)
-        throw new Error(error.message)
-    }
-}
+  try {
+      const bookId = req.params.id;
+      if (!bookId) {
+          return res.status(400).json({ message: 'Book ID is required' });
+      }
+
+      const book = await Book.findById(bookId);
+      if (!book) {
+          return res.status(404).json({ message: 'Book not found' });
+      }
+
+      res.json(book);
+  } catch (error) {
+      console.error("Error in getOne:", error);  // Log lỗi chi tiết
+      res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
 
 const updateOne = async (req, res) => {
   try {

@@ -1,40 +1,55 @@
 <template>
-    <nav class="navbar navbar-expand">
-        <div class="navbar-brand-container">
-            <a href="/admin/books">
-                <img src="../../img/logoWeb.png" alt="Logo" class="logo">
-            </a>
-            <div class="mr-auto navbar-nav">
-                <li class="nav-item">
-                    <router-link :to="{name: 'book'}" class="nav-link" :class="{active: $route.name === 'book'}">
-                        <h6><b>Quản lý kho sách</b></h6>
-                        <i class="fa-solid fa-book"></i>
-                    </router-link>
-                </li>
-                <li class="nav-item">
-                  <router-link :to="{ name: 'borrow' }" class="nav-link" :class="{ active: $route.name === 'borrow' }">
-                    <h6><b>Quản lý mượn sách</b></h6>
-                    <i class="fa-solid fa-book-reader"></i>
-                  </router-link>
-                </li>
-                <li class="nav-item">
-                    <router-link :to="{ name: 'reader' }" class="nav-link" :class="{ active: $route.name === 'reader' }">
-                        <h6><b>Quản lý người đọc</b></h6>
-                        <i class="fa-solid fa-user"></i>
-                    </router-link>
-                </li>
-            </div>
-        </div>
-        <div class="logout-container">
-            <button class="btn btn-danger button-logout">
-                Đăng xuất
-            </button>
-        </div>
-    </nav>
+  <nav class="navbar navbar-expand">
+    <div class="navbar-brand-container">
+      <a href="/admin/books">
+        <img src="../../img/logoWeb.png" alt="Logo" class="logo">
+      </a>
+      <div class="mr-auto navbar-nav">
+        <li class="nav-item">
+          <router-link :to="{ name: 'book' }" class="nav-link" :class="{ active: $route.name === 'book' }">
+            <h6><b>Quản lý kho sách</b></h6>
+            <i class="fa-solid fa-book"></i>
+          </router-link>
+        </li>
+        <li class="nav-item">
+          <router-link :to="{ name: 'borrow' }" class="nav-link" :class="{ active: $route.name === 'borrow' }">
+            <h6><b>Quản lý mượn sách</b></h6>
+            <i class="fa-solid fa-book-reader"></i>
+          </router-link>
+        </li>
+        <li class="nav-item">
+          <router-link :to="{ name: 'reader' }" class="nav-link" :class="{ active: $route.name === 'reader' }">
+            <h6><b>Quản lý người đọc</b></h6>
+            <i class="fa-solid fa-user"></i>
+          </router-link>
+        </li>
+      </div>
+    </div>
+    <div class="logout-container">
+      <button class="btn btn-danger button-logout" @click="logout">
+        Đăng xuất
+      </button>
+    </div>
+  </nav>
 </template>
 
 <script>
-
+import Authorization from "@/services/admin/authorization.service";
+export default {
+  computed: {},
+  name: "app-header-admin",
+  methods: {
+    async logout() {
+      // Xử lý đăng xuất ở đây
+      try {
+        const response = await Authorization.logOut();
+        this.$router.push({ name: "login" });
+      } catch (error) {
+        console.log(error)
+      }
+    }
+  }
+}
 </script>
 <style scoped>
 .navbar-brand-container {
