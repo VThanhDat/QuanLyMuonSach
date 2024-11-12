@@ -13,10 +13,20 @@ class EmployeeService {
         }
     }
 
-    async statusbook(readerId, bookId, status) {
+    async statusBook(readerId, bookId, status) {
         try {
             // Gọi đến ReaderService để thay đổi trạng thái của sách
             const response = await this.api.put(`/statusBook/${readerId}/${bookId}`, { status });
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    // Phương thức gọi API để xóa sách đã mượn
+    async deleteBorrowedBook(readerId, bookId) {
+        try {
+            const response = await this.api.delete(`/borrow/${readerId}/${bookId}`);
             return response.data;
         } catch (error) {
             throw error;

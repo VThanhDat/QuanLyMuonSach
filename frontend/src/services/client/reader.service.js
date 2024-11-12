@@ -79,8 +79,6 @@ class ReaderService {
 
     async updateBorrow(token, borrow) {
         try {
-            console.log(token)
-            console.log(borrow)
             const response = await this.apiClient.put('/borrow', { token, borrow });
             return response.data;
         } catch (error) {

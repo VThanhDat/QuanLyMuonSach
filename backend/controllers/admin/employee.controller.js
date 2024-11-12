@@ -1,62 +1,91 @@
-const Employee = require('../../models/employee.model')
-const Reader = require('../../models/reader.model')
+const Employee = require('../../models/employee.model');
+const Reader = require('../../models/reader.model');
 
 // [GET] /admin/employee/infor
-const getInfor = async (req, res) => {
+module.exports.getInfor = async (req, res) => {
     try {
         const token = req.cookies.token;
         const employee = await Employee.findOne({
             token: token,
         })
-        if (!employee) {
-            res.status(404).json({message: 'Employee not found.'})
-        }
-        res.status(200).json({message: 'Send employee successfully', employee})
+        res.status(200).json({ message: 'Send employee successfully', employee });
     } catch (error) {
-        res.status(500).json({error: error.message})
+        res.status(500).json({ error: error.message });
     }
 }
 
-const getReaders = async (req, res) => {
+module.exports.getReaders = async (req, res) => {
     try {
-        const readers = await Reader.find({})
-        res.status(200).json({message: 'Send readers successfully', readers});
+        const readers = await Reader.find({});
+        res.status(200).json(readers);
     } catch (error) {
-        res.status(500).json({ error: error.message })
+        res.status(500);
+        throw new Error(error.message)
     }
 }
 
-const statusBook = async (req, res) => {
+module.exports.statusBook = async (req, res) => {
     try {
         // Lấy thông tin từ request
-        const { readerId, bookId } = req.params
-        const { status } = req.body
-        // Kiễm tra xem reader và book có tồn tại không
+        const { readerId, bookId } = req.params;
+        const { status } = req.body;
+        // Kiểm tra xem reader và book có tồn tại không
         const reader = await Reader.findById(readerId);
         if (!reader) {
-            res.status(404).json({ message: 'Reader not found.' })
+            res.status(404).json({ message: "Reader not found." });
             return;
         }
-        // findIndex => trả về chỉ số của phần tử đầu tiên thỏa mãn hàm kiểm tra được cung cấp.
         const bookIndex = reader.borrow.findIndex(book => book.id_book === bookId);
         if (bookIndex === -1) {
-            res.status(404).json({ message: 'Book not found.' })
+            res.status(404).json({ message: "Book not found." });
             return;
         }
         console.log("bookIndex", bookIndex)
         // Thay đổi trạng thái sách
         reader.borrow[bookIndex].status = status;
 
-        // Lưu thay đổi vào CSDL
+        // // Lưu thay đổi vào CSDL
         await reader.save();
+
+        // Trả về thông báo thành công
         res.status(200).json({ message: "Status updated successfully." });
     } catch (error) {
-        res.status(500).json({ error: error.message })
+        res.status(500);
+        throw new Error(error.message)
     }
 }
 
-module.exports = {
-    getInfor,
-    getReaders,
-    statusBook
-}
+module.exports.deleteBorrowedBook = async (req, res) => {
+    try {
+        // Lấy thông tin từ request
+        const { readerId, bookId } = req.params;
+
+        // Kiểm tra xem reader có tồn tại không
+        const reader = await Reader.findById(readerId);
+        if (!reader) {
+            return res.status(404).json({ message: "Reader not found." });
+        }
+
+        // Tìm sách trong danh sách mượn của độc giả
+        const bookIndex = reader.borrow.findIndex(book => book.id_book === bookId);
+        if (bookIndex === -1) {
+            return res.status(404).json({ message: "Book not found." });
+        }
+
+        // Kiểm tra trạng thái của sách, nếu là 'returned' thì xóa sách
+        if (reader.borrow[bookIndex].status === 'returned') {
+            // Xóa sách khỏi danh sách mượn
+            reader.borrow.splice(bookIndex, 1);
+
+            // Lưu thay đổi vào CSDL
+            await reader.save();
+
+            // Trả về thông báo thành công
+            return res.status(200).json({ message: "Borrowed book deleted successfully." });
+        } else {
+            return res.status(400).json({ message: "Book has not been returned yet." });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};

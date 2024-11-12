@@ -6,6 +6,8 @@ router.get('/infor', controller.getInfor)
 
 router.get('/getReaders', controller.getReaders)
 
-router.put('/statusBook/:readerId/:bookId',controller.statusBook)
+router.put('/statusBook/:readerId/:bookId', controller.statusBook)
+
+router.delete('/borrow/:readerId/:bookId', controller.deleteBorrowedBook);
 
 module.exports = router;

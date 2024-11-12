@@ -41,11 +41,10 @@
                             <td>
                                 <button v-if="canReturn(borrowedBook.status)" class="btn btn-danger"
                                     @click="statusBookReturn(reader, borrowedBook, 'returned')">
-                                    Trả
+                                    Trả sách
                                 </button>
-                                <button v-if="canDelete(borrowedBook.status)" class="btn btn-danger"
-                                    @click="deleteBook(borrowedBook.id_book)">
-                                    Xóa
+                                <button disabled v-if="canDelete(borrowedBook.status)" class="btn btn-danger">
+                                    Đả trả
                                 </button>
                             </td>
                         </tr>
@@ -176,11 +175,11 @@ export default {
         canReturn(status) {
             return status === "accepted";
         },
-        async deleteBook(id) {
-            const respone = await readerService.returnBookBorrow(id);
-            this.retrieveBooks();
-            this.retrieveReaders();
-        },
+        // async deleteBook(id) {
+        //     const respone = await readerService.returnBookBorrow(id);
+        //     this.retrieveBooks();
+        //     this.retrieveReaders();
+        // },
         refreshList() {
             this.retrieveBooks();
             this.searchText = "";

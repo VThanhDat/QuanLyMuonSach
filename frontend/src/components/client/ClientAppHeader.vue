@@ -17,10 +17,17 @@
                         <i class="fa-solid fa-user"></i>
                     </router-link>
                 </li>
+
+                <li class="nav-item">
+                    <router-link :to="{ name: 'borrow-client' }" class="nav-link" :class="{ active: $route.name === 'account-client' }">
+                        <h6><b>Tài khoản của tôi</b></h6>
+                        <i class="fa-solid fa-user"></i>
+                    </router-link>
+                </li>
             </div>
         </div>
         <div class="logout-container">
-            <button class="btn btn-danger button-logout">
+            <button class="btn btn-danger button-logout" @click="logout">
                 Đăng xuất
             </button>
         </div>
@@ -28,8 +35,25 @@
 </template>
 
 <script>
+import Authorization from "@/services/client/authorization.service";
 
+export default {
+  computed: {},
+  name: "client-app-header",
+  methods: {
+    async logout() {
+      // Xử lý đăng xuất ở đây
+      try {
+        const respone = await Authorization.logOut();
+        this.$router.push({ name: "login-client" });
+      } catch (error) {
+        console.log(error);
+      }
+    },
+  },
+};
 </script>
+
 <style scoped>
 .navbar-brand-container {
   display: flex;
