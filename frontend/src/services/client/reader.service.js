@@ -5,6 +5,15 @@ class ReaderService {
         this.apiClient = createApiClient(baseUrl)
     }
 
+    async createUser(userData) {
+        try {
+          const response = await this.apiClient.post("/register", userData);
+          return response.data;
+        } catch (error) {
+          throw error;
+        }
+      }
+
     async getAllUsers() {
         try {
             const response = await this.apiClient.get('/');

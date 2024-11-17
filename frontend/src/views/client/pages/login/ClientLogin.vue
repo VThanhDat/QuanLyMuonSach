@@ -4,7 +4,7 @@
     <div class="login_page">
       <div class="container">
         <!-- <div><img class="namelogo" src="../../../../img/nameWeb.png" alt=""></div> -->
-        <a href="/admin/auth/login" class="logo-link">
+        <a href="/auth/login" class="logo-link">
           <img class="logo" src="../../../../img/logoWeb.png" alt="">
         </a>
         <div class="login">Đăng nhập</div>
@@ -25,7 +25,6 @@
         </form>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -167,5 +166,20 @@ export default {
 
 .register a:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding: 20px;
+    margin: 10px;
+  }
+
+  .add-new {
+    font-size: 20px;
+  }
+
+  .logo {
+    width: 100px;
+  }
 }
 </style>

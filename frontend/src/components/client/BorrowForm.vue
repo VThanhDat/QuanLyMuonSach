@@ -13,7 +13,7 @@
 
             <div class="form-item">
                 <label class="label" for="quantity">Số lượng:</label><br />
-                <input class="input" type="number" id="quantity" v-model="formData.quantity" />
+                <input class="input" type="number" id="quantity" v-model="formData.quantity" disabled />
             </div>
 
             <div class="form-item">

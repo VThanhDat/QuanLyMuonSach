@@ -4,11 +4,19 @@ mongoose.plugin(slug);
 
 const readerSchema = new mongoose.Schema({
     fullName: String,
-    email: String,
+    email: {
+        type: String,
+        required: true,
+        unique: true
+    },
     password: String,
     token: String,
     address: String,
-    phone: String,
+    phone: {
+        type: String,
+        required: true,
+        unique: true
+    },
     borrow: [
         {
             id_book: String,

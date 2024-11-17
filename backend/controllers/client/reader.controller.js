@@ -4,10 +4,28 @@ const asyncHandler = require('express-async-handler')
 const generateString = require('../../helpers/generateString')
 
 const create = asyncHandler(async (req, res) => {
-    req.body.token = generateString.generateRandomString(20);
-    const user = await Reader.create(req.body);
-    res.status(200).json(user);
-})
+    try {
+      req.body.email = req.body.email.toLowerCase(); // Chuyển email thành chữ thường
+      req.body.token = generateString.generateRandomString(20);
+      const user = await Reader.create(req.body);
+      res.status(200).json(user);
+    } catch (error) {
+      if (error.code === 11000) {
+        const duplicateField = Object.keys(error.keyValue)[0];
+        let message = "Duplicate field error";
+        if (duplicateField === "email") {
+          message = "Email already exists";
+          }
+          if (duplicateField === "phone") {
+            message = "Phone already exists";
+          }
+        return res.status(400).json({ error: message });
+      }
+      res.status(500).json({ message: `Error! ${error.message}` });
+    }
+  });
+  
+
 
 const getUser = asyncHandler(async (req, res) => {
     try {
