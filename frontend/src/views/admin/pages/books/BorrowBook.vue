@@ -19,19 +19,20 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(reader, readerIndex) in readers" :key="readerIndex">
+                    <template v-for="(reader, readerIndex) in readers" :key="readerIndex">
                         <template v-if="reader.borrow.length > 0">
-                            <template v-for="(borrowedBook, bookIndex) in reader.borrow" :key="bookIndex">
+                            <tr v-for="(borrowedBook, bookIndex) in reader.borrow" :key="bookIndex">
                                 <td>{{ bookIndex + 1 }}</td>
-                                <td>{{ reader.fullName }}</td> <!-- Hiển thị tên độc giả cho mỗi sách -->
+                                <td>{{ reader.fullName }}</td> <!-- Hiển thị tên độc giả -->
                                 <td>{{ getBookName(borrowedBook.id_book) }}</td>
                                 <td>{{ borrowedBook.quantity }}</td>
                                 <td>{{ borrowedBook.borrowDate }}</td>
                                 <td>{{ borrowedBook.returnDate }}</td>
                                 <td class="text-primary">
-                                    {{ borrowedBook.status === 'accepted' ? 'Đã duyệt' : borrowedBook.status ===
-                                        'refused' ? 'Từ chối' : borrowedBook.status === 'returned' ? 'Đã trả' :
-                                        borrowedBook.status === 'processing' ? 'Chờ xử lí' : 'Unknown' }}
+                                    {{ borrowedBook.status === 'accepted' ? 'Đã duyệt' :
+                                        borrowedBook.status === 'refused' ? 'Từ chối' :
+                                            borrowedBook.status === 'returned' ? 'Đã trả' :
+                                                borrowedBook.status === 'processing' ? 'Chờ xử lí' : 'Unknown' }}
                                 </td>
                                 <td>
                                     <!-- Conditional rendering based on status -->
@@ -47,19 +48,26 @@
                                             Xóa
                                         </button>
                                     </template>
+                                    <template v-else-if="borrowedBook.status === 'refused'">
+                                        <button @click="deleteBorrowedBook(reader, borrowedBook)"
+                                            class="btn btn-danger">
+                                            Xóa
+                                        </button>
+                                    </template>
                                     <template v-else>
                                         <button @click="statusBook(reader, borrowedBook, 'accepted')"
                                             class="btn btn-success">
                                             Duyệt
                                         </button>
-                                        <button @click="statusBook(reader, borrowedBook, 'refused')" class="btn btn-danger">
+                                        <button @click="statusBook(reader, borrowedBook, 'refused')"
+                                            class="btn btn-danger">
                                             Từ chối
                                         </button>
                                     </template>
                                 </td>
-                            </template>
+                            </tr>
                         </template>
-                    </tr>
+                    </template>
                 </tbody>
             </table>
         </div>
@@ -127,7 +135,7 @@ export default {
         async deleteBorrowedBook(reader, borrowedBook) {
             // Xác nhận xóa
             const isConfirmed = window.confirm("Bạn có chắc chắn muốn xóa người mượn cuốn sách này?");
-            
+
             if (isConfirmed) {
                 try {
                     const response = await EmployeeService.deleteBorrowedBook(

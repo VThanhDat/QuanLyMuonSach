@@ -27,9 +27,8 @@ export default {
 
 <style scoped>
 .container {
-    width: 80%;
     width: 60%;
-    height: 600px;
+    height: 670px;
     text-align: center;
     /* margin-top: 10px; */
     background-color: #f5f5f5;

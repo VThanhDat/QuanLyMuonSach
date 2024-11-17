@@ -39,13 +39,16 @@
                                         'Unknown' }}
                             </td>
                             <td>
-                                <button v-if="canReturn(borrowedBook.status)" class="btn btn-danger"
-                                    @click="statusBookReturn(reader, borrowedBook, 'returned')">
-                                    Trả sách
+                                <button v-if="borrowedBook.status === 'processing'" class="btn btn-warning"
+                                    @click="statusBookReturn(reader, borrowedBook, 'refused')">
+                                    Hủy yêu cầu
                                 </button>
-                                <button disabled v-if="canDelete(borrowedBook.status)" class="btn btn-danger">
-                                    Đả trả
-                                </button>
+                                <template v-if="borrowedBook.status === 'accepted'">
+                                    <button class="btn btn-danger"
+                                        @click="statusBookReturn(reader, borrowedBook, 'returned')">
+                                        Trả sách
+                                    </button>
+                                </template>
                             </td>
                         </tr>
                     </tbody>

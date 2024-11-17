@@ -73,7 +73,7 @@ module.exports.deleteBorrowedBook = async (req, res) => {
         }
 
         // Kiểm tra trạng thái của sách, nếu là 'returned' thì xóa sách
-        if (reader.borrow[bookIndex].status === 'returned') {
+        if (reader.borrow[bookIndex].status === 'returned' || reader.borrow[bookIndex].status === 'refused') {
             // Xóa sách khỏi danh sách mượn
             reader.borrow.splice(bookIndex, 1);
 
