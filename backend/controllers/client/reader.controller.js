@@ -63,6 +63,7 @@ const borrowBook = async (req, res) => {
                 borrowDate: req.body.borrow.borrowDate || "01/01/2024",
                 returnDate: req.body.borrow.returnDate || "31/12/2024",
                 quantity: req.body.borrow.quantity || 1,
+                initialQuantity: req.body.borrow.quantity || 1,
             };
 
             const readers = await Reader.find({});
@@ -151,30 +152,41 @@ const statusBookReturn = async (req, res) => {
         // Lấy thông tin từ request
         const { readerId, bookId } = req.params
         const { status } = req.body
-        //Kiểm tra xem reader và book có tồn tại không
+
+        // Kiểm tra xem reader và book có tồn tại không
         const reader = await Reader.findById(readerId)
         if (!reader) {
             res.status(404).json({ message: "Reader not found." })
             return;
         }
+
         const bookIndex = reader.borrow.findIndex(book => book.id_book === bookId)
         if (bookIndex === -1) {
             res.status(404).json({ message: "Book not found." })
             return;
         }
+
         console.log("bookIndex", bookIndex)
+
         // Thay đổi trạng thái sách
         reader.borrow[bookIndex].status = status
+
+        // Nếu trạng thái là "đã trả", giảm quantity đi 1
+        if (status === "returned") {
+            // Giảm quantity đi 1, nhưng không thay đổi initialQuantity
+            reader.borrow[bookIndex].quantity -= 1;
+        }
 
         // Lưu thay đổi vào CSDL
         await reader.save()
 
         // Trả về thông báo thành công
-        res.status(200).json({message:"Status updated successfully."})
+        res.status(200).json({ message: "Status updated successfully." })
     } catch (error) {
-        res.status(500).json({ message: `Error! ${error}` });
+        res.status(500).json({ message: `Error! ${error}` })
     }
 }
+
 
 const getNumberBookBorrowed = asyncHandler(async (req,res) => {
     try {

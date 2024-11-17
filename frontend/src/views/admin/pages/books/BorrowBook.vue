@@ -25,7 +25,7 @@
                                 <td>{{ bookIndex + 1 }}</td>
                                 <td>{{ reader.fullName }}</td> <!-- Hiển thị tên độc giả -->
                                 <td>{{ getBookName(borrowedBook.id_book) }}</td>
-                                <td>{{ borrowedBook.quantity }}</td>
+                                <td>{{ borrowedBook.initialQuantity }}</td>
                                 <td>{{ borrowedBook.borrowDate }}</td>
                                 <td>{{ borrowedBook.returnDate }}</td>
                                 <td class="text-primary">

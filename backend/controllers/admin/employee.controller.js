@@ -72,18 +72,18 @@ module.exports.deleteBorrowedBook = async (req, res) => {
             return res.status(404).json({ message: "Book not found." });
         }
 
-        // Kiểm tra trạng thái của sách, nếu là 'returned' thì xóa sách
+        // Kiểm tra trạng thái của sách, nếu là 'returned' hoặc 'refused' thì xóa sách
         if (reader.borrow[bookIndex].status === 'returned' || reader.borrow[bookIndex].status === 'refused') {
-            // Xóa sách khỏi danh sách mượn
+            // Xóa sách khỏi danh sách mượn mà không thay đổi số lượng mượn
             reader.borrow.splice(bookIndex, 1);
 
-            // Lưu thay đổi vào CSDL
+            // Lưu thay đổi vào CSDL mà không thay đổi số lượng mượn
             await reader.save();
 
             // Trả về thông báo thành công
             return res.status(200).json({ message: "Borrowed book deleted successfully." });
         } else {
-            return res.status(400).json({ message: "Book has not been returned yet." });
+            return res.status(400).json({ message: "Book has not been returned or refused yet." });
         }
     } catch (error) {
         res.status(500).json({ error: error.message });
