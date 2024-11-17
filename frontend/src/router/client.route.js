@@ -40,6 +40,12 @@ const clientRoutes = [
         name: "borrow-client",
         component: () => import("@/views/client/pages/books/BorrowBook.vue"),
         beforeEnter: requireClientAuth
+      },
+      {
+        path: "/reader/account",
+        name: "account-client",
+        component: () => import("@/views/client/pages/books/ClientAccount.vue"),
+        beforeEnter: requireClientAuth
     },
     {
         path: "/reader/borrow/:id",

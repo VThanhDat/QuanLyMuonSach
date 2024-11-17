@@ -59,6 +59,7 @@ class ReaderService {
             throw error;
         }
     }
+
     async getUserByToken(formData) {
         try {
             const { reader } = (await this.apiClient.get(`/user`, { headers: { Authorization: `Bearer ${formData.get("tokenUser")}` } })).data;
@@ -67,7 +68,35 @@ class ReaderService {
             throw error;
         }
     }
+    
 
+    async getInforUserByToken(formData) {
+        try {
+            // Lấy token từ đối tượng formData
+            const token = formData.token; // Đảm bảo bạn truyền token theo đúng cách
+
+            const { reader } = (await this.apiClient.get(`/userinfor`, { 
+                headers: { Authorization: `Bearer ${token}` }
+            })).data;
+
+            return reader;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    // Kiểm tra và đảm bảo base URL đúng
+    async updateUserByToken(token, userData) {
+        try {
+            const response = await this.apiClient.put(`/${token}`, userData); // Đảm bảo `/api/reader/update` là đúng
+            return response.data;
+        } catch (error) {
+            console.error("Error updating user details:", error);
+            throw error;
+        }
+    }
+
+    
     async updateUser(userId, userData) {
         try {
             const response = await this.apiClient.put(`/${userId}`,userData);
@@ -136,5 +165,19 @@ class ReaderService {
             throw error;
         }
     }
+
+    async updateUserDetails(userData) {
+        try {
+            // Gửi yêu cầu PUT tới API mà không cần token trong body (nếu token lưu trong cookie)
+            const response = await this.apiClient.put('/update', userData, {
+                token: tokenUser
+            });
+            return response.data;
+        } catch (error) {
+            console.error("Error updating user details:", error);
+            throw error;
+        }
+    }
+    
 }
 export default new ReaderService();

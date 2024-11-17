@@ -19,7 +19,7 @@
                 </li>
 
                 <li class="nav-item">
-                    <router-link :to="{ name: 'borrow-client' }" class="nav-link" :class="{ active: $route.name === 'account-client' }">
+                    <router-link :to="{ name: 'account-client' }" class="nav-link" :class="{ active: $route.name === 'account-client' }">
                         <h6><b>Tài khoản của tôi</b></h6>
                         <i class="fa-solid fa-user"></i>
                     </router-link>

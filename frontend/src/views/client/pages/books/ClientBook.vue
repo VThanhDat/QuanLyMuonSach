@@ -3,13 +3,69 @@
     <ClientAppHeader />
     <div class="container mt-3">
       <div class="page row">
-        <div class="col-md-10">
-          <ClientInputSearch v-model="searchText" />
+        <!-- Phần dưới: Các button và Tìm kiếm -->
+        <div class="col-md-12">
+          <div class="item row mt-3 justify-content-center">
+            <div class="col-12 col-md-4">
+              <div class="input-group">
+                <input
+                  type="text"
+                  v-model="searchText"
+                  class="form-control"
+                  placeholder="Nhập từ khóa"
+                />
+                <button class="btn btn-danger" @click="searchBooks">
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
+            </div>
+            <!-- Phần chọn sắp xếp theo giá -->
+            <div
+              class="col-12 col-md-3 d-flex align-items-center gap-3 mt-2 mt-md-0"
+            >
+              <label for="sortOrder" class="mb-0">Sắp xếp theo: </label>
+              <div class="price-filter">
+                <select
+                  v-model="sortOrder"
+                  class="form-control sort-select"
+                  @change="sortBooks"
+                >
+                  <option value="none">Giá</option>
+                  <option value="asc">Giá tăng dần</option>
+                  <option value="desc">Giá giảm dần</option>
+                </select>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="mt-3 col-12">
-          <ClientBookList v-if="filteredBooksCount > 0" :books="filteredBooks" v-model:activeIndex="activeIndex" />
-          <p v-else>Không có sách trong kho.</p>
+
+        <!-- Danh sách sách -->
+        <div class="col-md-12 mt-3">
+          <div class="mt-3 col-12">
+            <ClientBookList v-if="filteredBooksCount > 0" :books="paginatedBooks" v-model:activeIndex="activeIndex" />
+            <p v-else>Không có sách trong kho.</p>
+          </div>
+
+          <!-- Phân trang -->
+          <div class="pagination-container mt-4 mb-5">
+            <button
+              class="btn btn-outline-secondary"
+              :disabled="currentPage === 1"
+              @click="goToPage(currentPage - 1)"
+            >
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <span class="mx-2">Trang {{ currentPage }} / {{ totalPages }}</span>
+            <button
+              class="btn btn-outline-secondary"
+              :disabled="currentPage === totalPages"
+              @click="goToPage(currentPage + 1)"
+            >
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
         </div>
+
         <!-- Overlay và phần chi tiết sách -->
         <div v-if="activeBook" class="overlay-container">
           <div class="overlay" @click="closeOverlay"></div>
@@ -30,65 +86,73 @@
         </div>
       </div>
     </div>
+    <ClientFooter />
   </div>
 </template>
 
 <script>
 import ClientBookDetail from "@/components/client/ClientBookDetail.vue";
 import ClientAppHeader from "@/components/client/ClientAppHeader.vue";
-import ClientInputSearch from "@/components/client/ClientInputSearch.vue";
+import ClientFooter from "@/components/client/ClientFooter.vue";
 import ClientBookList from "@/components/client/ClientBookList.vue";
 import BookService from "@/services/client/book.service";
 
 export default {
   components: {
     ClientBookDetail,
-    ClientInputSearch,
     ClientBookList,
     ClientAppHeader,
+    ClientFooter,
   },
   data() {
     return {
       books: [],
       activeIndex: -1,
       searchText: "",
+      currentPage: 1,
+      booksPerPage: 8,
+      sortOrder: "none",
     };
   },
   watch: {
     searchText() {
       this.activeIndex = -1;
+      this.currentPage = 1;
     },
   },
   computed: {
-    booksStrings() {
-      return this.books.map((book) => {
-        const { id_publisher, bookTitle, price, quantity, publishYear, author, thumbnail } = book;
-        return [
-          id_publisher,
-          bookTitle,
-          price,
-          quantity,
-          publishYear,
-          author,
-          thumbnail,
-        ]
-          .map((field) => field?.toString().toLowerCase() || "")
-          .join("");
-      });
-    },
     filteredBooks() {
       if (!this.searchText) return this.books;
-
-      return this.books.filter((_book, index) =>
-        this.booksStrings[index].includes(this.searchText.toLowerCase())
+      return this.books.filter(book => 
+        Object.values(book)
+          .join('') 
+          .toLowerCase()
+          .includes(this.searchText.toLowerCase())
       );
     },
     activeBook() {
-      if (this.activeIndex < 0) return null;
-      return this.filteredBooks[this.activeIndex];
+      return this.activeIndex >= 0 ? this.filteredBooks[this.activeIndex] : null;
     },
     filteredBooksCount() {
       return this.filteredBooks.length;
+    },
+    sortedBooks() {
+      let booksToDisplay = [...this.filteredBooks];
+
+      if (this.sortOrder === "asc") {
+        booksToDisplay = booksToDisplay.sort((a, b) => a.price - b.price);
+      } else if (this.sortOrder === "desc") {
+        booksToDisplay = booksToDisplay.sort((a, b) => b.price - a.price);
+      }
+
+      return booksToDisplay;
+    },
+    totalPages() {
+      return Math.ceil(this.filteredBooksCount / this.booksPerPage);
+    },
+    paginatedBooks() {
+      const startIndex = (this.currentPage - 1) * this.booksPerPage;
+      return this.sortedBooks.slice(startIndex, startIndex + this.booksPerPage);
     },
   },
   methods: {
@@ -106,6 +170,18 @@ export default {
     },
     closeOverlay() {
       this.activeIndex = -1;
+    },
+    goToAddBook() {
+      this.$router.push({ name: "book.add" });
+    },
+    goToPage(pageNumber) {
+      if (pageNumber < 1 || pageNumber > this.totalPages) return;
+      this.currentPage = pageNumber;
+    },
+    sortBooks() {
+      if (this.sortOrder !== "none") {
+        this.currentPage = 1;
+      }
     },
   },
   mounted() {
@@ -139,6 +215,7 @@ export default {
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
+  transition: background-color 0.3s ease;
 }
 
 .book-details-container {
@@ -148,24 +225,60 @@ export default {
   transform: translate(-50%, -50%);
   background-color: white;
   padding: 20px;
-  border-radius: 5px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  width: 80%;
+  max-width: 500px;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
 
-.btn-borrow {
-  font-size: 20px;
-  background-color: red;
+.book-details-container h4 {
+  margin-bottom: 20px;
+  font-size: 1.2em;
+}
+
+.book-details-container .btn-borrow {
+  font-size: 16px;
+  background-color: #d0011b;
   color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
   border: none;
-  border-radius: 10px;
   cursor: pointer;
-  transition: background-color 0.3s;
   text-align: center;
-  margin-left: 26%;
-  margin-top: 10px;
+  transition: background-color 0.3s ease;
 }
 
-.btn-borrow:hover {
-  background-color: #cc0000;
+.book-details-container .btn-borrow:hover {
+  background-color: #c90018;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.pagination-container button {
+  margin: 0 5px;
+}
+
+.pagination-container button:disabled {
+  background-color: #f2f2f2;
+}
+
+.pagination-container button i {
+  font-size: 18px;
+}
+
+@media (max-width: 768px) {
+  .book-details-container {
+    width: 90%;
+  }
+
+  .pagination-container button {
+    font-size: 14px;
+  }
 }
 </style>

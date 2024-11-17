@@ -43,6 +43,12 @@ module.exports.statusBook = async (req, res) => {
         console.log("bookIndex", bookIndex)
         // Thay đổi trạng thái sách
         reader.borrow[bookIndex].status = status;
+        
+        // Nếu trạng thái là "đã trả", giảm quantity đi 1
+        if (status === "refused") {
+            // Giảm quantity đi 1, nhưng không thay đổi initialQuantity
+            reader.borrow[bookIndex].quantity -= 1;
+        }
 
         // // Lưu thay đổi vào CSDL
         await reader.save();
