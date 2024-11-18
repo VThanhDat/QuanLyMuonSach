@@ -157,6 +157,16 @@ export default {
     transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
+/* Form styling */
+form {
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
 /* Styles for the input fields */
 input.form-control {
     border-radius: 5px;
