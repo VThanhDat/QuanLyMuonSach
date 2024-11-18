@@ -120,7 +120,7 @@ const borrowBook = async (req, res) => {
                 } else if(existingBook.status === "processing") {
                     // Nếu đã có quyển sách nhưng chưa được duyệt, cập nhật số lượng
                     return res.status(400).json({ message: 'Sách bạn mượn đang đợi duyệt' });
-                } else if(existingBook.status === "returned" || existingBook.status === "rejected" ) {
+                } else if(existingBook.status === "returned" || existingBook.status === "refused" ) {
                     // Nếu sách đã trả, cho phép mượn lại
                     existingBook.status = "processing"
                     existingBook.quantity += newBorrow.quantity;
