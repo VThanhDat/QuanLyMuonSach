@@ -315,12 +315,12 @@ td button {
     margin-right: 5px;
 }
 
-td:nth-child(2) {
-    text-align: left;
-    width: 30%;
+td:nth-child(2) { /* Cột Độc giả */
+    text-align: center;
+    width: 20%; /* Giảm độ rộng của cột Độc giả */
 }
 
-td:nth-child(3) {
-    width: 7%;
+td:nth-child(3) { /* Cột Tên sách */
+    width: 30%; /* Tăng độ rộng của cột Tên sách */
 }
 </style>

@@ -38,7 +38,6 @@
             </div>
           </div>
         </div>
-
         <!-- Danh sách sách -->
         <div class="col-md-12 mt-3">
           <div class="mt-3 col-12">
@@ -110,7 +109,7 @@ export default {
       activeIndex: -1,
       searchText: "",
       currentPage: 1,
-      booksPerPage: 8,
+      booksPerPage: 10,
       sortOrder: "none",
     };
   },
@@ -131,7 +130,9 @@ export default {
       );
     },
     activeBook() {
-      return this.activeIndex >= 0 ? this.filteredBooks[this.activeIndex] : null;
+      return this.activeIndex >= 0 && this.activeIndex < this.paginatedBooks.length 
+        ? this.paginatedBooks[this.activeIndex] 
+        : null;
     },
     filteredBooksCount() {
       return this.filteredBooks.length;
@@ -177,6 +178,7 @@ export default {
     goToPage(pageNumber) {
       if (pageNumber < 1 || pageNumber > this.totalPages) return;
       this.currentPage = pageNumber;
+      this.activeIndex = -1;  // Reset activeIndex khi chuyển trang
     },
     sortBooks() {
       if (this.sortOrder !== "none") {
@@ -272,13 +274,49 @@ export default {
   font-size: 18px;
 }
 
-@media (max-width: 768px) {
-  .book-details-container {
-    width: 90%;
-  }
+.books-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
 
-  .pagination-container button {
-    font-size: 14px;
-  }
+.book-item {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.book-item:hover {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.book-item img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.book-item .book-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin-top: 10px;
+}
+
+.book-item .book-author,
+.book-item .book-price {
+  font-size: 14px;
+  color: #777;
+}
+
+.sort-select {
+  border-radius: 8px;
+  padding: 5px;
+}
+
+.sort-select option {
+  padding: 5px;
 }
 </style>

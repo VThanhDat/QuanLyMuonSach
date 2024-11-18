@@ -27,20 +27,12 @@
                     <p v-else>Không có cuốn sách nào.</p>
 
                     <!-- Phân trang -->
-                    <div class="pagination-container mt-4 mb-5">
-                        <button 
-                            class="btn btn-outline-secondary" 
-                            :disabled="currentPage === 1" 
-                            @click="goToPage(currentPage - 1)"
-                        >
+                    <div v-if="totalPages > 1" class="pagination">
+                        <button class="btn btn-sm btn-light" @click="previousPage" :disabled="currentPage === 1">
                             <i class="fas fa-chevron-left"></i>
                         </button>
                         <span class="mx-2">Trang {{ currentPage }} / {{ totalPages }}</span>
-                        <button 
-                            class="btn btn-outline-secondary" 
-                            :disabled="currentPage === totalPages" 
-                            @click="goToPage(currentPage + 1)"
-                        >
+                        <button class="btn btn-sm btn-light" @click="nextPage" :disabled="currentPage === totalPages">
                             <i class="fas fa-chevron-right"></i>
                         </button>
                     </div>
@@ -57,8 +49,7 @@
                                 <i class="fas fa-edit"></i> Hiệu chỉnh
                             </span>
                         </router-link>
-                        <span class="mt-2 badge badge-warning" style="color:red; cursor: pointer;"
-                            @click="removeOneBook(activeBook)">
+                        <span class="mt-2 badge badge-warning" style="color:red; cursor: pointer;" @click="removeOneBook(activeBook)">
                             <i class="fa-solid fa-trash"></i> Xóa
                         </span>
                     </div>
@@ -90,56 +81,39 @@ export default {
             activeIndex: -1,
             searchText: "",
             currentPage: 1,
-            pageSize: 5, // Số sách trên mỗi trang
-        }
+            itemsPerPage: 5, // Số lượng sách mỗi trang
+        };
     },
     watch: {
         searchText() {
-            this.activeIndex = -1;
-            this.currentPage = 1; // Reset về trang đầu tiên khi tìm kiếm
+            this.activeIndex = -1; // Reset activeIndex khi tìm kiếm
+            this.currentPage = 1;  // Reset trang khi tìm kiếm
         }
     },
     computed: {
         booksStrings() {
             return this.books.map((book) => {
-                const {
-                    bookTitle,
-                    price,
-                    quantity,
-                    publishYear,
-                    author,
-                    thumbnail,
-                } = book;
-                return [
-                    bookTitle,
-                    price,
-                    quantity,
-                    publishYear,
-                    author,
-                    thumbnail,
-                ].join("");
+                const { bookTitle, price, quantity, publishYear, author, thumbnail } = book;
+                return [bookTitle, price, quantity, publishYear, author, thumbnail].join("");
             });
         },
         filteredBooks() {
             if (!this.searchText) return this.books;
-
-            return this.books.filter((_book, index) =>
-                this.booksStrings[index].includes(this.searchText)
-            );
-        },
-        paginatedBooks() {
-            const startIndex = (this.currentPage - 1) * this.pageSize;
-            const endIndex = startIndex + this.pageSize;
-            return this.filteredBooks.slice(startIndex, endIndex);
-        },
-        activeBook() {
-            return this.activeIndex < 0 ? null : this.filteredBooks[this.activeIndex];
+            return this.books.filter((_book, index) => this.booksStrings[index].includes(this.searchText));
         },
         filteredBooksCount() {
             return this.filteredBooks.length;
         },
         totalPages() {
-            return Math.ceil(this.filteredBooksCount / this.pageSize);
+            return Math.ceil(this.filteredBooksCount / this.itemsPerPage);
+        },
+        paginatedBooks() {
+            const start = (this.currentPage - 1) * this.itemsPerPage;
+            const end = this.currentPage * this.itemsPerPage;
+            return this.filteredBooks.slice(start, end);
+        },
+        activeBook() {
+            return this.activeIndex < 0 ? null : this.paginatedBooks[this.activeIndex];
         }
     },
     methods: {
@@ -154,21 +128,17 @@ export default {
             this.retrieveBooks();
             this.searchText = "";
             this.activeIndex = -1;
-            this.currentPage = 1;
+            this.currentPage = 1; // Reset trang khi làm mới
         },
         async removeOneBook(book) {
             if (confirm("Bạn muốn xóa cuốn sách này?")) {
                 try {
                     await BookService.delete(book._id);
-                    toast.success("Book was deleted successfully!", {
-                        autoClose: 1200,
-                    });
+                    toast.success("Book was deleted successfully!", { autoClose: 1200 });
                     this.refreshList();
                 } catch (error) {
                     console.log(error);
-                    toast.error("Failed to delete the book.", {
-                        autoClose: 1200,
-                    });
+                    toast.error("Failed to delete the book.", { autoClose: 1200 });
                 }
             }
         },
@@ -185,15 +155,16 @@ export default {
         goToAddBook() {
             this.$router.push({ name: "book.add" });
         },
-        goToPage(pageNumber) {
-            if (pageNumber >= 1 && pageNumber <= this.totalPages) {
-                this.currentPage = pageNumber;
-            }
+        nextPage() {
+            if (this.currentPage < this.totalPages) this.currentPage++;
+        },
+        previousPage() {
+            if (this.currentPage > 1) this.currentPage--;
         }
     },
     mounted() {
         this.refreshList();
-    },
+    }
 }
 </script>
 
@@ -210,9 +181,46 @@ export default {
     padding-bottom: 10px;
 }
 
-.pagination-container {
+.pagination {
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.pagination button {
+    padding: 5px 15px;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    background-color: #f8f9fa;
+    color: #495057;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 0 5px;
+}
+
+.pagination button:disabled {
+    background-color: #e9ecef;
+    border-color: #ddd;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+.pagination button:hover:not(:disabled) {
+    background-color: #007bff;
+    color: white;
+}
+
+.pagination button:active {
+    background-color: #0056b3;
+    border-color: #0056b3;
+    color: white;
+}
+
+.pagination span {
+    font-size: 16px;
+    color: #495057;
+    margin: 0 10px;
 }
 </style>
