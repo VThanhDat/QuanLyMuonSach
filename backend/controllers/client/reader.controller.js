@@ -62,7 +62,6 @@ const getAll = async (req, res) => {
 
 const borrowBook = async (req, res) => {
     try {
-
         const tokenUser = req.cookies.tokenUser;
         if (tokenUser) {
             const reader = await Reader.findOne({ token: tokenUser });
@@ -101,7 +100,6 @@ const borrowBook = async (req, res) => {
                 return res.status(404).json({ message: 'Book not found' });
             }
 
-
             if (book.quantity === 0) {
                 // Không còn sách trong kho
                 console.log("Không còn sách trong kho để mượn");
@@ -121,10 +119,11 @@ const borrowBook = async (req, res) => {
                     return res.status(400).json({ message: 'Sách bạn mượn đã duyệt nhưng chưa trả' });
                 } else if(existingBook.status === "processing") {
                     // Nếu đã có quyển sách nhưng chưa được duyệt, cập nhật số lượng
-                    existingBook.borrowDate = newBorrow.borrowDate || '01/01/2024';
-                    existingBook.returnDate = newBorrow.returnDate || '31/12/2024';
                     return res.status(400).json({ message: 'Sách bạn mượn đang đợi duyệt' });
-                }else{
+                } else if(existingBook.status === "returned" || existingBook.status === "rejected" ) {
+                    // Nếu sách đã trả, cho phép mượn lại
+                    existingBook.status = "processing"
+                    existingBook.quantity += newBorrow.quantity;
                     existingBook.borrowDate = newBorrow.borrowDate || '01/01/2024';
                     existingBook.returnDate = newBorrow.returnDate || '31/12/2024';
                 }
@@ -143,6 +142,7 @@ const borrowBook = async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 }
+
 
 const deleteBookFromBorrow = asyncHandler(async (req, res) => {
     try {
