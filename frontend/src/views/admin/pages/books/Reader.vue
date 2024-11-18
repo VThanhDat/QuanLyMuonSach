@@ -23,20 +23,12 @@
                     <p v-else>Không có độc giả nào.</p>
 
                     <!-- Phân trang -->
-                    <div class="pagination-container mt-4 mb-5">
-                        <button 
-                            class="btn btn-outline-secondary" 
-                            :disabled="currentPage === 1" 
-                            @click="goToPage(currentPage - 1)"
-                        >
+                    <div v-if="totalPages > 1" class="pagination-container">
+                        <button class="btn btn-sm btn-light" @click="previousPage" :disabled="currentPage === 1">
                             <i class="fas fa-chevron-left"></i>
                         </button>
                         <span class="mx-2">Trang {{ currentPage }} / {{ totalPages }}</span>
-                        <button 
-                            class="btn btn-outline-secondary" 
-                            :disabled="currentPage === totalPages" 
-                            @click="goToPage(currentPage + 1)"
-                        >
+                        <button class="btn btn-sm btn-light" @click="nextPage" :disabled="currentPage === totalPages">
                             <i class="fas fa-chevron-right"></i>
                         </button>
                     </div>
@@ -74,13 +66,13 @@ export default {
             activeIndex: -1,
             searchText: "",
             currentPage: 1,
-            pageSize: 3, // Số độc giả trên mỗi trang
+            itemsPerPage: 3,  // Number of readers per page
         };
     },
     watch: {
         searchText() {
-            this.activeIndex = -1;
-            this.currentPage = 1; // Reset về trang đầu khi tìm kiếm
+            this.activeIndex = -1; // Reset active index when searching
+            this.currentPage = 1;  // Reset page when searching
         },
     },
     computed: {
@@ -102,26 +94,24 @@ export default {
         },
         filteredReaders() {
             if (!this.searchText) return this.readers;
-
             return this.readers.filter((_reader, index) =>
                 this.readersStrings[index].includes(this.searchText)
             );
-        },
-        paginatedReaders() {
-            const startIndex = (this.currentPage - 1) * this.pageSize;
-            const endIndex = startIndex + this.pageSize;
-            return this.filteredReaders.slice(startIndex, endIndex);
-        },
-        activeReader() {
-            if (this.activeIndex < 0) return null;
-            return this.filteredReaders[this.activeIndex];
         },
         filteredReadersCount() {
             return this.filteredReaders.length;
         },
         totalPages() {
-            return Math.ceil(this.filteredReadersCount / this.pageSize);
+            return Math.ceil(this.filteredReadersCount / this.itemsPerPage);
         },
+        paginatedReaders() {
+            const start = (this.currentPage - 1) * this.itemsPerPage;
+            const end = this.currentPage * this.itemsPerPage;
+            return this.filteredReaders.slice(start, end);
+        },
+        activeReader() {
+            return this.activeIndex < 0 ? null : this.paginatedReaders[this.activeIndex];
+        }
     },
     methods: {
         async retrieveReaders() {
@@ -135,13 +125,14 @@ export default {
             this.retrieveReaders();
             this.searchText = "";
             this.activeIndex = -1;
-            this.currentPage = 1;
+            this.currentPage = 1;  // Reset page when refreshing
         },
-        goToPage(pageNumber) {
-            if (pageNumber >= 1 && pageNumber <= this.totalPages) {
-                this.currentPage = pageNumber;
-            }
+        nextPage() {
+            if (this.currentPage < this.totalPages) this.currentPage++;
         },
+        previousPage() {
+            if (this.currentPage > 1) this.currentPage--;
+        }
     },
     mounted() {
         this.refreshList();
@@ -166,5 +157,42 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination-container button {
+    padding: 5px 15px;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    background-color: #f8f9fa;
+    color: #495057;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 0 5px;
+}
+
+.pagination-container button:disabled {
+    background-color: #e9ecef;
+    border-color: #ddd;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+.pagination-container button:hover:not(:disabled) {
+    background-color: #007bff;
+    color: white;
+}
+
+.pagination-container button:active {
+    background-color: #0056b3;
+    border-color: #0056b3;
+    color: white;
+}
+
+.pagination-container span {
+    font-size: 16px;
+    color: #495057;
+    margin: 0 10px;
 }
 </style>
