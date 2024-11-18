@@ -4,7 +4,7 @@
         <div class="container mt-3">
             <div class="page row">
                 <div class="col-md-10">
-                    <InputSearch v-model="searchText"/>
+                    <InputSearch v-model="searchText" />
                 </div>
                 <div class="mt-3 col-8">
                     <h4>Danh sách sách trong kho <i class="fa-solid fa-book"></i></h4>
@@ -19,24 +19,46 @@
                             <i class="fas fa-trash"></i> Xóa tất cả
                         </button>
                     </div>
-                    <BookList v-if="filteredBooksCount > 0" :books="filteredBooks" v-model:activeIndex="activeIndex" />
+                    <BookList 
+                        v-if="filteredBooksCount > 0" 
+                        :books="paginatedBooks" 
+                        v-model:activeIndex="activeIndex" 
+                    />
                     <p v-else>Không có cuốn sách nào.</p>
+
+                    <!-- Phân trang -->
+                    <div class="pagination-container mt-4 mb-5">
+                        <button 
+                            class="btn btn-outline-secondary" 
+                            :disabled="currentPage === 1" 
+                            @click="goToPage(currentPage - 1)"
+                        >
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <span class="mx-2">Trang {{ currentPage }} / {{ totalPages }}</span>
+                        <button 
+                            class="btn btn-outline-secondary" 
+                            :disabled="currentPage === totalPages" 
+                            @click="goToPage(currentPage + 1)"
+                        >
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="mt-3 col-4">
                     <div v-if="activeBook">
-                        <h4>Chi tiết đầu sách
-                            <i class="fa-solid fa-book"></i>
-                        </h4>
-                        <BookDetail :book="activeBook"/>
+                        <h4>Chi tiết đầu sách <i class="fa-solid fa-book"></i></h4>
+                        <BookDetail :book="activeBook" />
                         <router-link :to="{
                             name: 'book.edit',
-                            params: {id: activeBook._id},}"
-                        >
+                            params: { id: activeBook._id },
+                        }">
                             <span class="mt-2 badge badge-warning" style="color: blue">
                                 <i class="fas fa-edit"></i> Hiệu chỉnh
                             </span>
                         </router-link>
-                        <span class="mt-2 badge badge-warning" style="color:red; cursor: pointer;" @click="removeOneBook(activeBook)">
+                        <span class="mt-2 badge badge-warning" style="color:red; cursor: pointer;"
+                            @click="removeOneBook(activeBook)">
                             <i class="fa-solid fa-trash"></i> Xóa
                         </span>
                     </div>
@@ -62,23 +84,22 @@ export default {
         BookList,
         BookDetail,
     },
-    // Đoạn mã xử lý đầy đủ sẽ trình bày bên dưới
     data() {
         return {
             books: [],
             activeIndex: -1,
             searchText: "",
+            currentPage: 1,
+            pageSize: 5, // Số sách trên mỗi trang
         }
     },
     watch: {
-        // Giám sát các thay đổi của biến searchText.
-        // Bỏ chọn phần tử đang được chọn trong danh sách.
         searchText() {
             this.activeIndex = -1;
+            this.currentPage = 1; // Reset về trang đầu tiên khi tìm kiếm
         }
     },
-    computed: { 
-        // Chuyển các đối tượng book thành chuỗi để tiện cho tìm kiếm.
+    computed: {
         booksStrings() {
             return this.books.map((book) => {
                 const {
@@ -99,7 +120,6 @@ export default {
                 ].join("");
             });
         },
-        // Trả về các book có chứa thông tin cần tìm kiếm.
         filteredBooks() {
             if (!this.searchText) return this.books;
 
@@ -107,13 +127,19 @@ export default {
                 this.booksStrings[index].includes(this.searchText)
             );
         },
-
-        activeBook() {
-            return this.activeBook < 0 ? null : this.filteredBooks[this.activeIndex];
+        paginatedBooks() {
+            const startIndex = (this.currentPage - 1) * this.pageSize;
+            const endIndex = startIndex + this.pageSize;
+            return this.filteredBooks.slice(startIndex, endIndex);
         },
-
+        activeBook() {
+            return this.activeIndex < 0 ? null : this.filteredBooks[this.activeIndex];
+        },
         filteredBooksCount() {
             return this.filteredBooks.length;
+        },
+        totalPages() {
+            return Math.ceil(this.filteredBooksCount / this.pageSize);
         }
     },
     methods: {
@@ -128,6 +154,7 @@ export default {
             this.retrieveBooks();
             this.searchText = "";
             this.activeIndex = -1;
+            this.currentPage = 1;
         },
         async removeOneBook(book) {
             if (confirm("Bạn muốn xóa cuốn sách này?")) {
@@ -138,26 +165,31 @@ export default {
                     });
                     this.refreshList();
                 } catch (error) {
-                    console.log(error)
+                    console.log(error);
                     toast.error("Failed to delete the book.", {
                         autoClose: 1200,
                     });
                 }
             }
         },
-        async removeAllBooks(book) {
+        async removeAllBooks() {
             if (confirm("Bạn muốn xóa tất cả sách ?")) {
                 try {
                     await BookService.deleteAll();
                     this.refreshList();
                 } catch (error) {
-                    console.log(error)
+                    console.log(error);
                 }
             }
         },
         goToAddBook() {
             this.$router.push({ name: "book.add" });
         },
+        goToPage(pageNumber) {
+            if (pageNumber >= 1 && pageNumber <= this.totalPages) {
+                this.currentPage = pageNumber;
+            }
+        }
     },
     mounted() {
         this.refreshList();
@@ -166,16 +198,21 @@ export default {
 </script>
 
 <style scoped>
-    .page {
+.page {
     text-align: left;
-    }
+}
 
-    .custom-margin {
+.custom-margin {
     margin-right: 10px;
-    /* hoặc bất kỳ giá trị nào bạn muốn */
-    }
+}
 
-    .item {
+.item {
     padding-bottom: 10px;
-    }
+}
+
+.pagination-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 </style>

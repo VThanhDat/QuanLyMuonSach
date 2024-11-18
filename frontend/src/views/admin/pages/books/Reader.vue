@@ -4,7 +4,7 @@
         <div class="container mt-3">
             <div class="page row">
                 <div class="col-md-10">
-                    <InputSearchReader v-model="searchText"/>
+                    <InputSearch v-model="searchText" />
                 </div>
                 <div class="mt-3 col-8">
                     <h4>Danh Sách Độc Giả
@@ -12,20 +12,41 @@
                     </h4>
                     <div class="item">
                         <button class="btn btn-sm btn-primary custom-margin" @click="refreshList()">
-                            <i class="fas fa-redo"></i>Làm mới
+                            <i class="fas fa-redo"></i> Làm mới
                         </button>
                     </div>
-                    <ReaderList v-if="filteredReadersCount > 0" :readers="filteredReaders"
-                        v-model:activeIndex="activeIndex" />
+                    <ReaderList 
+                        v-if="filteredReadersCount > 0" 
+                        :readers="paginatedReaders" 
+                        v-model:activeIndex="activeIndex" 
+                    />
                     <p v-else>Không có độc giả nào.</p>
+
+                    <!-- Phân trang -->
+                    <div class="pagination-container mt-4 mb-5">
+                        <button 
+                            class="btn btn-outline-secondary" 
+                            :disabled="currentPage === 1" 
+                            @click="goToPage(currentPage - 1)"
+                        >
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <span class="mx-2">Trang {{ currentPage }} / {{ totalPages }}</span>
+                        <button 
+                            class="btn btn-outline-secondary" 
+                            :disabled="currentPage === totalPages" 
+                            @click="goToPage(currentPage + 1)"
+                        >
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="mt-3 col-4">
                     <div v-if="activeReader">
-                        <h4>
-                            Chi tiết độc Giả
+                        <h4>Chi tiết Độc Giả
                             <i class="fa-solid fa-user"></i>
                         </h4>
-                        <ReaderDetail :reader="activeReader"/>
+                        <ReaderDetail :reader="activeReader" />
                     </div>
                 </div>
             </div>
@@ -35,7 +56,7 @@
 
 <script>
 import AppHeader from '@/components/admin/AppHeader.vue';
-import InputSearchReader from '@/components/admin/InputSearch.vue';
+import InputSearch from '@/components/admin/InputSearch.vue';
 import ReaderList from '@/components/admin/ReaderList.vue';
 import ReaderDetail from '@/components/admin/ReaderDetail.vue';
 import ReaderService from "@/services/admin/reader.service";
@@ -43,7 +64,7 @@ import ReaderService from "@/services/admin/reader.service";
 export default {
     components: {
         ReaderDetail,
-        InputSearchReader,
+        InputSearch,
         ReaderList,
         AppHeader,
     },
@@ -52,18 +73,21 @@ export default {
             readers: [],
             activeIndex: -1,
             searchText: "",
+            currentPage: 1,
+            pageSize: 3, // Số độc giả trên mỗi trang
         };
     },
     watch: {
         searchText() {
             this.activeIndex = -1;
+            this.currentPage = 1; // Reset về trang đầu khi tìm kiếm
         },
     },
     computed: {
         readersStrings() {
             return this.readers.map((reader) => {
                 const { 
-                    fullName,
+                    fullName, 
                     email, 
                     phone, 
                     address 
@@ -83,12 +107,20 @@ export default {
                 this.readersStrings[index].includes(this.searchText)
             );
         },
+        paginatedReaders() {
+            const startIndex = (this.currentPage - 1) * this.pageSize;
+            const endIndex = startIndex + this.pageSize;
+            return this.filteredReaders.slice(startIndex, endIndex);
+        },
         activeReader() {
             if (this.activeIndex < 0) return null;
             return this.filteredReaders[this.activeIndex];
         },
         filteredReadersCount() {
             return this.filteredReaders.length;
+        },
+        totalPages() {
+            return Math.ceil(this.filteredReadersCount / this.pageSize);
         },
     },
     methods: {
@@ -103,6 +135,12 @@ export default {
             this.retrieveReaders();
             this.searchText = "";
             this.activeIndex = -1;
+            this.currentPage = 1;
+        },
+        goToPage(pageNumber) {
+            if (pageNumber >= 1 && pageNumber <= this.totalPages) {
+                this.currentPage = pageNumber;
+            }
         },
     },
     mounted() {
@@ -110,7 +148,6 @@ export default {
     },
 };
 </script>
-
 
 <style scoped>
 .page {
@@ -121,7 +158,13 @@ export default {
     margin-right: 10px;
 }
 
-.item{
+.item {
     padding-bottom: 10px;
+}
+
+.pagination-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 </style>
