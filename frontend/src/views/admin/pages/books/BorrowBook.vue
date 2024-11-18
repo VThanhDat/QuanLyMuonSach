@@ -107,7 +107,6 @@
     </div>
 </template>
 
-
 <script>
 import AppHeader from "@/components/admin/AppHeader.vue";
 import BookService from "@/services/admin/book.service";
@@ -126,7 +125,7 @@ export default {
             searchText: '',
             activeIndex: -1,
             currentPage: 1,
-            itemsPerPage: 8, // Số lượng bản ghi trên mỗi trang
+            itemsPerPage: 4, // Số lượng bản ghi trên mỗi trang
             selectedStatus: '', // Trạng thái đã chọn từ dropdown
         };
     },
@@ -220,15 +219,15 @@ export default {
         },
         getBookName(bookId) {
             const book = this.books.find((book) => book._id === bookId);
-            return book ? book.bookTitle : "Unknown";
+            return book ? book.bookTitle : "Không tìm thấy";
+        },
+        filterByStatus() {
+            this.currentPage = 1; // Reset về trang đầu khi thay đổi trạng thái lọc
         },
         goToPage(page) {
             if (page >= 1 && page <= this.totalPages) {
                 this.currentPage = page;
             }
-        },
-        filterByStatus() {
-            this.currentPage = 1; // Reset về trang đầu khi thay đổi trạng thái lọc
         },
     },
     mounted() {
@@ -237,7 +236,6 @@ export default {
     },
 };
 </script>
-
 
 <style scoped>
 .page {

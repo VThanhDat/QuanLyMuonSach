@@ -17,16 +17,18 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(borrowedBook, index) in reader.borrow" :key="borrowedBook._id">
-                            <td>{{ index + 1 }}</td>
+                        <tr v-for="(borrowedBook, index) in paginatedBooks" :key="borrowedBook._id">
+                            <td>{{ index + 1 + (currentPage - 1) * pageSize }}</td>
+                            <!-- Đảm bảo đánh số STT đúng khi phân trang -->
                             <td>{{ getBookName(borrowedBook.id_book) }}</td>
                             <td>{{ borrowedBook.initialQuantity }}</td>
                             <td>{{ borrowedBook.borrowDate }}</td>
                             <td>{{ borrowedBook.returnDate }}</td>
                             <td class="text-primary">
-                                {{ borrowedBook.status === 'accepted' ? 'Đã duyệt' : borrowedBook.status === 'refused' ? 'Từ chối' :
+                                {{ borrowedBook.status === 'accepted' ? 'Đã duyệt' : borrowedBook.status === 'refused' ?
+                                    'Từ chối' :
                                     borrowedBook.status === 'returned' ? 'Đã trả' : borrowedBook.status === 'processing' ?
-                                        'Chờ xử lí' : 'Unknown' }}
+                                'Chờ xử lí' : 'Unknown' }}
                             </td>
                             <td>
                                 <button v-if="borrowedBook.status === 'processing'" class="btn btn-warning"
@@ -43,24 +45,19 @@
                         </tr>
                     </tbody>
                 </table>
-                  <!-- Phân trang -->
-          <div class="pagination-container mt-4 mb-5">
-            <button
-              class="btn btn-outline-secondary"
-              :disabled="currentPage === 1"
-              @click="goToPage(currentPage - 1)"
-            >
-              <i class="fas fa-chevron-left"></i>
-            </button>
-            <span class="mx-2">Trang {{ currentPage }} / {{ totalPages }}</span>
-            <button
-              class="btn btn-outline-secondary"
-              :disabled="currentPage === totalPages"
-              @click="goToPage(currentPage + 1)"
-            >
-              <i class="fas fa-chevron-right"></i>
-            </button>
-          </div>
+                <!-- Phân trang -->
+                <div class="pagination-container mt-4 mb-5">
+                    <button class="btn btn-outline-secondary" :disabled="currentPage === 1"
+                        @click="goToPage(currentPage - 1)">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span class="mx-2">Trang {{ currentPage }} / {{ totalPages }}</span>
+                    <button class="btn btn-outline-secondary" :disabled="currentPage === totalPages"
+                        @click="goToPage(currentPage + 1)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+
             </template>
             <template v-else>
                 <p><i>Bạn chưa có đăng ký đơn mượn nào.</i></p>
@@ -97,14 +94,13 @@ export default {
             token: "",
             reader: {},
             currentPage: 1,
-            pageSize: 1, // Số sách trên mỗi trang
+            pageSize: 4, // Số sách trên mỗi trang
         };
     },
     watch: {
         searchText() {
             this.activeIndex = -1;
             this.currentPage = 1; // Reset về trang đầu tiên khi tìm kiếm
-
         },
     },
     computed: {
@@ -127,11 +123,6 @@ export default {
                 this.booksStrings[index].includes(this.searchText)
             );
         },
-        paginatedBooks() {
-            const startIndex = (this.currentPage - 1) * this.pageSize;
-            const endIndex = startIndex + this.pageSize;
-            return this.filteredBooks.slice(startIndex, endIndex);
-        },
         activeBook() {
             if (this.activeIndex < 0) return null;
             return this.filteredBooks[this.activeIndex];
@@ -139,14 +130,23 @@ export default {
         filteredBooksCount() {
             return this.filteredBooks.length;
         },
+
+
+        paginatedBooks() {
+            const startIndex = (this.currentPage - 1) * this.pageSize;
+            const endIndex = startIndex + this.pageSize;
+            return this.reader.borrow.slice(startIndex, endIndex); // Phân trang cho danh sách sách mượn của độc giả
+        },
         totalPages() {
-            return Math.ceil(this.filteredBooksCount / this.pageSize);
-        }
+            return Math.ceil(this.reader.borrow.length / this.pageSize); // Tổng số trang dựa trên số sách mượn
+        },
+
     },
     methods: {
         async retrieveBooks() {
             try {
                 this.books = await BookService.getAll();
+                console.log(this.books); // Kiểm tra dữ liệu sách nhận được từ API
             } catch (error) {
                 console.log(error);
             }
@@ -177,7 +177,11 @@ export default {
         },
         getBookName(bookId) {
             const book = this.books.find((book) => book._id === bookId);
-            return book ? book.bookTitle : "Unknown";
+            if (!book || !book.bookTitle) {
+                console.log(`Không tìm thấy sách với id: ${bookId}`);
+                return "Unknown"; // Nếu không tìm thấy sách hoặc không có tên sách, trả về "Unknown"
+            }
+            return book.bookTitle; // Trả về tên sách nếu tìm thấy
         },
         refreshList() {
             this.retrieveBooks();
@@ -199,85 +203,94 @@ export default {
 
 <style scoped>
 /* Đảm bảo toàn bộ trang sử dụng Flexbox */
-html, body {
-  height: 100%;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
+html,
+body {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Container sẽ chiếm hết không gian còn lại */
 .container {
-  flex-grow: 1; 
-  padding-bottom: 20px; /* Thêm khoảng cách dưới nếu cần */
+    flex-grow: 1;
+    padding-bottom: 20px;
+    /* Thêm khoảng cách dưới nếu cần */
 }
 
 /* Footer luôn ở dưới cùng của trang */
 .page {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh; /* Đảm bảo chiều cao của body đủ lớn */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    /* Đảm bảo chiều cao của body đủ lớn */
 }
 
 footer {
-  margin-top: auto; /* Đẩy footer xuống dưới cùng */
+    margin-top: auto;
+    /* Đẩy footer xuống dưới cùng */
 }
 
 .name {
-  text-align: center;
-  color: red;
-  font-style: italic;
-  margin-bottom: 10px;
+    text-align: center;
+    color: red;
+    font-style: italic;
+    margin-bottom: 10px;
 }
 
 .table {
-  width: 100%;
-  border-collapse: collapse;
+    width: 100%;
+    border-collapse: collapse;
 }
 
 th,
 td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: center;
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
 }
 
 th {
-  background-color: #c5c3c3;
-  color: black;
+    background-color: #c5c3c3;
+    color: black;
 }
 
 tr:hover {
-  background-color: #f2f2f2;
+    background-color: #f2f2f2;
 }
 
 td button {
-  margin-right: 5px;
+    margin-right: 5px;
 }
 
 td:nth-child(2) {
-  text-align: left;
-  width: 30%;
+    text-align: left;
+    width: 30%;
 }
 
 td:nth-child(3) {
-  width: 7%;
+    width: 7%;
 }
 
 .pagination-container {
-  display: flex;
-  justify-content: center;  /* Căn giữa phần tử con theo chiều ngang */
-  align-items: center;      /* Căn giữa phần tử con theo chiều dọc */
-  margin-top: 20px;
-  margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    /* Căn giữa phần tử con theo chiều ngang */
+    align-items: center;
+    /* Căn giữa phần tử con theo chiều dọc */
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 .pagination-container button {
-  margin: 0 10px;  /* Thêm khoảng cách giữa các nút */
+    margin: 0 10px;
+    /* Thêm khoảng cách giữa các nút */
 }
 
 .pagination-container span {
-  font-size: 16px;  /* Tùy chỉnh kích thước chữ */
-  font-weight: bold; /* Làm đậm số trang */
+    font-size: 16px;
+    /* Tùy chỉnh kích thước chữ */
+    font-weight: bold;
+    /* Làm đậm số trang */
 }
 </style>
