@@ -47,6 +47,6 @@ const readerSchema = new mongoose.Schema({
     { timestamps: true }
 )
 
-const Reader = mongoose.model("Reader", readerSchema, "readers");
+const Reader = mongoose.model("Reader", readerSchema, "docgia");
 
 module.exports = Reader;
