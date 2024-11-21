@@ -14,7 +14,7 @@
                   class="form-control"
                   placeholder="Nhập từ khóa"
                 />
-                <button class="btn btn-danger" @click="searchBooks">
+                <button class="btn btn-warning" @click="searchBooks">
                   <i class="fas fa-search"></i>
                 </button>
               </div>
